@@ -39,10 +39,13 @@ def category_from_text(text):
 
     if "メンテナンス" in text:
         return "🔧 メンテナンス"
+
     if "障害" in text:
         return "⚠️ 障害情報"
+
     if "アップデート" in text or "hotfix" in t or "パッチ" in text:
         return "🔄 アップデート"
+
     if "お知らせ" in text:
         return "ℹ️ お知らせ"
 
@@ -152,17 +155,46 @@ def post_discord(item):
     if not WEBHOOK_URL:
         raise RuntimeError("DISCORD_WEBHOOK_URL が設定されていません")
 
-    message = (
-        f"**{item['category']}**\n"
-        f"**{item['title']}**\n\n"
-        f"🔗 {item['url']}"
-    )
+    category = item["category"]
+
+    # カテゴリごとにEmbed左側の色を変更
+    if "メンテナンス" in category:
+        color = 0x3498DB
+    elif "障害" in category:
+        color = 0xE74C3C
+    elif "アップデート" in category:
+        color = 0x2ECC71
+    elif "お知らせ" in category:
+        color = 0xF1C40F
+    else:
+        color = 0x9B59B6
+
+    embed = {
+        "title": item["title"],
+        "url": item["url"],
+        "description": (
+            f"### {category}\n"
+            "FINAL FANTASY XIV Lodestoneに"
+            "新しいニュースが掲載されました。"
+        ),
+        "color": color,
+        "fields": [
+            {
+                "name": "🔗 詳細",
+                "value": f"[Lodestoneでニュースを見る]({item['url']})",
+                "inline": False,
+            }
+        ],
+        "footer": {
+            "text": "FINAL FANTASY XIV 公式ニュース"
+        },
+    }
 
     response = requests.post(
         WEBHOOK_URL,
         json={
-            "content": message,
             "username": "FFXIV公式ニュース",
+            "embeds": [embed],
         },
         timeout=20,
     )

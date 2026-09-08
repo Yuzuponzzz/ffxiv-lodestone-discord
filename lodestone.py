@@ -133,13 +133,19 @@ def get_news():
     except Exception as e:
         print(f"RSS取得失敗: {e}")
 
-    print("ニュース一覧ページから取得します")
+    try:
+        print("ニュース一覧ページから取得します")
 
-    news = get_from_news_page()
+        news = get_from_news_page()
 
-    print(f"ニュース一覧から {len(news)} 件取得しました")
+        if news:
+            print(f"ニュース一覧から {len(news)} 件取得しました")
+            return news
 
-    return news
+    except Exception as e:
+        print(f"ニュース一覧取得失敗: {e}")
+
+    return []
 
 
 def post_discord(item):
@@ -168,14 +174,13 @@ def main():
     news = get_news()
 
     if not news:
-        raise RuntimeError("Lodestoneからニュースを取得できませんでした")
+        print("Lodestoneを現在取得できません。今回は何もせず終了します。")
+        return
 
     seen = load_seen()
 
     current_ids = [item["id"] for item in news]
 
-    # 初回実行時は現在の記事を既読として保存するだけ。
-    # 過去記事がDiscordへ大量投稿されるのを防ぐ。
     if not seen:
         print("初回実行です。現在の記事を既読として登録します。")
         save_seen(current_ids)
@@ -194,7 +199,6 @@ def main():
 
     print(f"新着ニュース: {len(new_items)} 件")
 
-    # 古いもの → 新しいもの の順に投稿
     for item in reversed(new_items):
         print(f"Discordへ投稿: {item['title']}")
         post_discord(item)

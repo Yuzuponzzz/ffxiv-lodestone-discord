@@ -21,7 +21,23 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Install dependencies
+        run: pip install requests beautifulsoup4 lxml
+
       - name: Run Lodestone checker
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: python lodestone.py
+
+      - name: Save news history
+        run: |
+          if [ -f seen.json ]; then
+            git config user.name "FFXIV Lodestone Bot"
+            git config user.email "actions@github.com"
+            git add seen.json
+
+            if ! git diff --cached --quiet; then
+              git commit -m "Update Lodestone news history"
+              git push
+            fi
+          fi

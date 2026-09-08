@@ -240,10 +240,4 @@ def main():
 
 
 if __name__ == "__main__":
-    test_item = {
-        "title": "【テスト】Discord Embed表示確認",
-        "url": "https://jp.finalfantasyxiv.com/lodestone/news/",
-        "category": "🔧 メンテナンス",
-    }
-
-    post_discord(test_item)
+    main()

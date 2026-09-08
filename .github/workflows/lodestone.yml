@@ -2,6 +2,13 @@ name: FFXIV Lodestone News
 
 on:
   workflow_dispatch:
+    inputs:
+      send_test:
+        description: "Discordへテスト投稿する"
+        required: false
+        default: false
+        type: boolean
+
   schedule:
     - cron: "*/10 * * * *"
 
@@ -23,6 +30,30 @@ jobs:
 
       - name: Install dependencies
         run: pip install requests beautifulsoup4 lxml
+
+      - name: Send Discord test message
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.send_test }}
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          python - <<'PY'
+          import os
+          import requests
+
+          url = os.environ["DISCORD_WEBHOOK_URL"]
+
+          r = requests.post(
+              url,
+              json={
+                  "content": "🧪 **FFXIV公式ニュース 動作テスト**\nDiscord Webhookへの接続に成功しました。",
+                  "username": "FFXIV公式ニュース",
+              },
+              timeout=20,
+          )
+
+          r.raise_for_status()
+          print("Discord test message sent successfully.")
+          PY
 
       - name: Run Lodestone checker
         env:

@@ -10,3 +10,4 @@ GitHubActionsを使用して自動更新するので、導入後は手動での�
 〇その他〇
 改良、使用、再配布はすべてご自由に行っていただいて構いません。
 その他不明な点はDiscode→tanpopo_12345までご連絡ください
+<img width="613" height="433" alt="image" src="https://github.com/user-attachments/assets/add3e8b4-7b2a-48ca-97b5-e77a8d5fe472" />

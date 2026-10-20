@@ -126,29 +126,34 @@ def get_from_news_page():
 
 
 def get_news():
-    try:
-        news = get_from_rss()
+    # RSSだけでは反映が遅れる可能性があるため、毎回公式一覧も確認する。
+    # URLをキーとして統合することで、同じ記事の二重通知を防ぐ。
+    from datetime import datetime, timezone
+    from urllib.parse import urlsplit, urlunsplit
 
-        if news:
-            print(f"RSSから {len(news)} 件取得しました")
-            return news
+    print(f"監視開始 (UTC): {datetime.now(timezone.utc).isoformat()}", flush=True)
+    merged = {}
+    for source_name, fetcher in (
+        ("RSS", get_from_rss),
+        ("公式ニュース一覧", get_from_news_page),
+    ):
+        try:
+            items = fetcher()
+            print(f"{source_name}: {len(items)} 件取得", flush=True)
+            for item in items:
+                parts = urlsplit(item["url"])
+                normalized = urlunsplit((
+                    parts.scheme.lower(), parts.netloc.lower(),
+                    parts.path.rstrip("/"), "", ""
+                ))
+                item["id"] = normalized
+                item["url"] = normalized
+                merged.setdefault(normalized, item)
+        except Exception as e:
+            print(f"{source_name}取得失敗: {e}", flush=True)
 
-    except Exception as e:
-        print(f"RSS取得失敗: {e}")
-
-    try:
-        print("ニュース一覧ページから取得します")
-
-        news = get_from_news_page()
-
-        if news:
-            print(f"ニュース一覧から {len(news)} 件取得しました")
-            return news
-
-    except Exception as e:
-        print(f"ニュース一覧取得失敗: {e}")
-
-    return []
+    print(f"統合後: {len(merged)} 件", flush=True)
+    return list(merged.values())
 
 
 def post_discord(item):
